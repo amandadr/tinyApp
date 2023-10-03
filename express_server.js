@@ -97,6 +97,15 @@ app.post('/urls/:id/delete', (req, res) => {
   res.redirect('/urls');
 });
 
+//LOGIN
+app.post('/login', (req, res) => {
+  const userInput = req.body.username;
+
+  res.cookie('username', userInput)
+
+  res.redirect('/urls');
+});
+
 
 // listen
 app.listen(PORT, () => {
