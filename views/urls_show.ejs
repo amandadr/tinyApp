@@ -5,7 +5,9 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous" />
-  <title>URL - TinyApp Example</title>
+  <title>
+    <%= id %> - TinyApp
+  </title>
 </head>
 
 <body>
@@ -21,9 +23,19 @@
           Short URL ID: <a href="/u/<%= id %>">
             <%= id %>
           </a>
-        </p>
-        <p>
-        <form method="GET" action="/urls/<%= id%>"><input type='submit' value='Update'>
+        <h4>Edit hyperlink:</h4>
+        <form class="form-center" action="/urls/<%= id%>" method="POST">
+          <div class="form-group mb-2">
+            <label for="newURL">Enter a URL:</label>
+            <input 
+              class="form-center" 
+              type="text" 
+              name="newURL" 
+              placeholder="http://"
+              style="width: 300px; margin: 1em" 
+            />
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
         </form>
         </p>
       </div>
