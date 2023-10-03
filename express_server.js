@@ -13,7 +13,7 @@ const urlDatabase = {
 function generateRandomString() {
   charSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let randomString = '';
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 6; i++) {
     let random = Math.floor(Math.random() * charSet.length);
     randomString += charSet.substring(random, random + 1);
   }
