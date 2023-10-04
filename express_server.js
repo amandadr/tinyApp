@@ -1,7 +1,7 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
 const app = express();
-const PORT = 8080; //default
+const PORT = 3000; //default
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
@@ -26,7 +26,7 @@ const users = {
   },
 };
 
-/// FUCNTIONS ///
+/// FUNCTIONS ///
 function generateRandomString() {
   charSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let randomString = '';
@@ -35,6 +35,14 @@ function generateRandomString() {
     randomString += charSet.substring(random, random + 1);
   }
   return randomString;
+};
+
+const getUserbyEmail = (users, email) => {
+  if (users.hasOwnProperty(email)) {
+    return users[email];
+  }
+  console.log('not found')
+  return false;
 };
 
 // homepage
@@ -74,29 +82,35 @@ app.post("/urls", (req, res) => {
 
 // register
 app.get("/register", (req, res) => {
-    const templateVars = {
-      user: req.cookies["user_id"]
-    };
+  const templateVars = {
+    user: req.cookies["user_id"]
+  };
 
-    res.render("urls_register", templateVars);
+  res.render("urls_register", templateVars);
 });
 // recieve newUser 
 app.post("/register", (req, res) => {
   // generate a unique id to assign to each new key
-  // const email = req.body.email;
-  // const password = req.body.password;
-  const { email, password } = req.body;
   let id = generateRandomString();
+  // pull user details from forms
+  const { email, password } = req.body;
 
-  users[id] = {
-    id,
-    email,
-    password,
-  };
+  // return broken request for empty forms or enrolled user
+  if (email.length < 1 || password.length < 1 || getUserbyEmail(users, email) !== false) {
+    res.sendStatus(400);
+  } else {
+    users[email] = {
+      id,
+      email,
+      password,
+    };
 
-  res.cookie('user_id', users[id])
-
-  res.redirect(`/urls`);
+    res.cookie('user_id', users[email])
+  
+    console.log("NEW USER CREATED", email);
+  
+    return res.redirect("/urls");
+  }
 });
 
 
@@ -145,19 +159,18 @@ app.post('/urls/:id/delete', (req, res) => {
 //LOGIN
 app.post('/login', (req, res) => {
   const userInput = req.body['username'];
-  
+
   res.cookie('username', userInput)
 
-  
+
   res.redirect('/urls');
 });
 
 //LOGOUT
 app.post('/logout', (req, res) => {
-  
-  res.clearCookie('username');
 
-  
+  res.clearCookie('user_id');
+
   res.redirect('/urls');
 });
 
