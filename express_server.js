@@ -7,11 +7,26 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+/// DATA ///
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
+/// FUCNTIONS ///
 function generateRandomString() {
   charSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let randomString = '';
@@ -37,7 +52,7 @@ app.get("/hello", (req, res) => {
 
 // READ - display the form
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  const templateVars = { urls: urlDatabase, user: req.cookies["user_id"] };
 
   res.render("urls_index", templateVars);
 });
@@ -46,7 +61,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
-// recieve
+// recieve new ID
 // (triggers when form is submitted)
 app.post("/urls", (req, res) => {
   // generate a unique id to assign to each new key
@@ -57,9 +72,37 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${newID}`);
 });
 
+// register
+app.get("/register", (req, res) => {
+    const templateVars = {
+      user: req.cookies["user_id"]
+    };
+
+    res.render("urls_register", templateVars);
+});
+// recieve newUser 
+app.post("/register", (req, res) => {
+  // generate a unique id to assign to each new key
+  // const email = req.body.email;
+  // const password = req.body.password;
+  const { email, password } = req.body;
+  let id = generateRandomString();
+
+  users[id] = {
+    id,
+    email,
+    password,
+  };
+
+  res.cookie('user_id', users[id])
+
+  res.redirect(`/urls`);
+});
+
+
 // display specific url
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"] };
 
   res.render("urls_show", templateVars);
 });
@@ -73,7 +116,7 @@ app.get("/u/:id", (req, res) => {
 //UPDATE
 app.get('/urls/:id', (req, res) => {
   // extract the site to display
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"] };
 
   res.render("urls_show", templateVars);
 });
@@ -83,7 +126,7 @@ app.post('/urls/:id', (req, res) => {
   const { newURL } = req.body;
   //get id
   const id = req.params.id
-
+  // update database
   urlDatabase[id] = newURL;
 
   res.redirect(`/urls/${id}`);
@@ -104,6 +147,15 @@ app.post('/login', (req, res) => {
   const userInput = req.body['username'];
   
   res.cookie('username', userInput)
+
+  
+  res.redirect('/urls');
+});
+
+//LOGOUT
+app.post('/logout', (req, res) => {
+  
+  res.clearCookie('username');
 
   
   res.redirect('/urls');

@@ -18,18 +18,26 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <h5><%= username%></h5>
-    <form class="form-right" action="/login" method="POST">
-      <div class="form-group mb-2">
-        <input 
-          class="form-right" 
-          type="text" 
-          name="username" 
-          placeholder="Username"
-          style="width: 200px; margin: 1em" 
-        />
-        <button type="submit" class="btn btn-primary">Login</button>
+    <% if(user){ %>
+      <div class="collapse navbar-collapse" id="cookieUsername"></div>
+        <h5>Logged in: <%= user.email%></h5>
+        <form action="/logout" method="POST">
+          <button type="submit" class="btn btn-primary">Logout</button>
+        </form>
       </div>
-    </form>
+    <% } else{ %>  
+      <form class="form-right" action="/login" method="POST">
+        <div class="form-group mb-2">
+          <input 
+            class="form-right" 
+            type="text" 
+            name="username" 
+            placeholder="Username"
+            style="width: 200px; margin: 1em" 
+          />
+          <button type="submit" class="btn btn-primary">Login</button>
+        </div>
+      </form>
+   <% } %>
   </nav>
 </header>

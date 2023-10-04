@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous" />
   <title>
-    <%= id %> - TinyApp
+    Welcome - TinyApp
   </title>
 </head>
 
@@ -16,26 +16,28 @@
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
-        <h5 class="card-title">TinyURL for: <a href="<%= longURL %>">
-            <%= longURL %>
-          </a>
+        <h5 class="card-title">Welcome to TinyApp! Please login:
         </h5>
-        <p class="card-text">
-          Short URL ID: <a href="/u/<%= id %>">
-            <%= id %>
-          </a>
-        <h4>Edit hyperlink:</h4>
-        <form class="form-center" action="/urls/<%= id%>" method="POST">
+        <form class="form-center" action="/register" method="POST">
           <div class="form-group mb-2">
-            <label for="newURL">Enter a URL:</label>
+            <label for="email">Enter a URL:</label>
             <input 
               class="form-center" 
-              type="text" 
-              name="newURL" 
-              placeholder="http://"
+              type="email" 
+              name="email" 
+              placeholder="email"
               style="width: 300px; margin: 1em" 
             />
-            <button type="submit" class="btn btn-primary">Submit</button>
+
+            <label for="password">Enter a URL:</label>
+            <input 
+              class="form-center" 
+              type="password" 
+              name="password" 
+              placeholder="password"
+              style="width: 300px; margin: 1em" 
+            />
+            <button type="submit" class="btn btn-primary">Login</button>
           </div>
         </form>
         </p>
