@@ -80,7 +80,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${newID}`);
 });
 
-// register
+// REGISTER
 app.get("/register", (req, res) => {
   const templateVars = {
     user: req.cookies["user_id"]
@@ -96,7 +96,7 @@ app.post("/register", (req, res) => {
   const { email, password } = req.body;
 
   // return broken request for empty forms or enrolled user
-  if (email.length < 1 || password.length < 1 || getUserbyEmail(users, email) !== false) {
+  if (!email || !password || getUserbyEmail(users, email) !== false) {
     res.sendStatus(400);
   } else {
     users[email] = {
@@ -134,7 +134,7 @@ app.get('/urls/:id', (req, res) => {
 
   res.render("urls_show", templateVars);
 });
-// trigger a post
+// update post
 app.post('/urls/:id', (req, res) => {
   //get the info input to through the form
   const { newURL } = req.body;
@@ -157,13 +157,12 @@ app.post('/urls/:id/delete', (req, res) => {
 });
 
 //LOGIN
-app.post('/login', (req, res) => {
-  const userInput = req.body['username'];
+app.get('/login', (req, res) => {
+  const templateVars = {
+    user: req.cookies["user_id"]
+  };
 
-  res.cookie('username', userInput)
-
-
-  res.redirect('/urls');
+  res.render("urls_login", templateVars);
 });
 
 //LOGOUT

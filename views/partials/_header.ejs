@@ -26,17 +26,11 @@
         </form>
       </div>
     <% } else{ %>  
-      <form class="form-right" action="/login" method="POST">
-        <div class="form-group mb-2">
-          <input 
-            class="form-right" 
-            type="text" 
-            name="username" 
-            placeholder="Username"
-            style="width: 200px; margin: 1em" 
-          />
-          <button type="submit" class="btn btn-primary">Login</button>
-        </div>
+      <form action="/login" method="GET">
+        <button type="submit" class="btn btn-primary" >Login</button>
+      </form>
+      <form action="/register" method="GET">
+        <button type="submit" class="btn btn-primary">Register</button>
       </form>
    <% } %>
   </nav>
