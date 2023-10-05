@@ -35,8 +35,6 @@ const getUserByEmail = (userData, email) => {
   const usersArr = Object.entries(userData);
   for (const user of usersArr) {
     if (user[1].email === email) {
-      // const result = Object.fromEntries(user);
-      console.log("USER:", user)
       // user[1] represents the user object {id, email, pass}
       return user[1];
     };
@@ -44,6 +42,10 @@ const getUserByEmail = (userData, email) => {
   console.log('User not found')
   return false;
 };
+
+// CONST REFERENCE
+// const user = req.cookies["user_id"];
+// const userEmail = user.email;
 
 // homepage
 app.get("/", (req, res) => {
@@ -58,17 +60,21 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-// READ - display the form
+// INDEX
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: req.cookies["user_id"] };
+  const user = req.cookies["user_id"];
+
+  const templateVars = { urls: urlDatabase, user };
 
   res.render("urls_index", templateVars);
 });
 
-// CREATE - add a new shortened url
+// CREATE NEW URL
 app.get("/urls/new", (req, res) => {
+  const user = req.cookies["user_id"];
+
   const templateVars = {
-    user: req.cookies["user_id"]
+    user
   };
   // redirect if not logged in
   if (!templateVars['user']) {
@@ -78,7 +84,9 @@ app.get("/urls/new", (req, res) => {
 });
 // recieve new ID
 app.post("/urls", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  const user = req.cookies["user_id"];
+
+  if (!user) {
     res.status(403).send("Gotta log in dude.");
   }
   // generate a unique id to assign to each new key
@@ -93,7 +101,9 @@ app.post("/urls", (req, res) => {
 
 // display specific url
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"] };
+  const user = req.cookies["user_id"];
+
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user };
 
   if (!urlDatabase[templateVars["id"]]) {
     res.status(404).send("The short URL you're looking for doesn't exist :(")
@@ -110,8 +120,10 @@ app.get("/u/:id", (req, res) => {
 
 //UPDATE
 app.get('/urls/:id', (req, res) => {
+  const user = req.cookies["user_id"];
+
   // extract the site to display
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user };
 
   res.render("urls_show", templateVars);
 });
@@ -129,8 +141,10 @@ app.post('/urls/:id', (req, res) => {
 
 //DELETE
 app.post('/urls/:id/delete', (req, res) => {
+  const user = req.cookies["user_id"];
+
   // if authorized, extract the id we need to delete from the url of the request
-  if (req.cookies["user_id"]) {
+  if (user) {
     const id = req.params.id;
     
     delete urlDatabase[id];
@@ -143,8 +157,10 @@ app.post('/urls/:id/delete', (req, res) => {
 
 // REGISTER
 app.get("/register", (req, res) => {
+  const user = req.cookies["user_id"];
+
   const templateVars = {
-    users, user: req.cookies["user_id"]
+    users, user,
   };
   
   // redirect if logged in
@@ -184,7 +200,8 @@ app.post("/register", (req, res) => {
 
 //LOGIN
 app.get('/login', (req, res) => {
-  const user = req.cookies["user_id"]
+  const user = req.cookies["user_id"];
+
   const templateVars = {
     users, user,
   };
@@ -199,7 +216,6 @@ app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const currentUser = getUserByEmail(users, email);
   // if currentUser isn't found
-  console.log("CU:", currentUser)
   if (currentUser === false || password !== currentUser.password) {
     res.status(403).send("WHO DO YOU THINK YOU ARE!?\n Make sure you're registered and your password is spelled correctly.")
   } else {
