@@ -18,8 +18,9 @@ const urlDatabase = {
     userID: "010101"
   },
 };
-// shortURL = urlDatabase[id?]
+// shortURL = urlDatabase[id]
 // longURL = urlDatabase[shortURL].longURL
+// userID = urlDatabase[shortURL].userID
 
 const users = {
   userRandomID: {
@@ -35,7 +36,9 @@ const users = {
 };
 
 /// FUNCTIONS ///
-const generateRandomString = () => { Math.random().toString(36).slice(2, 8) };
+const generateRandomString = () => { 
+  return Math.random().toString(36).slice(2, 8); 
+};
 
 const getUserByEmail = (userData, email) => {
   const usersArr = Object.entries(userData);
@@ -93,6 +96,7 @@ app.get("/urls", (req, res) => {
 
 });
 
+
 // CREATE NEW URL
 app.get("/urls/new", (req, res) => {
   const user = req.cookies["user_id"];
@@ -112,15 +116,15 @@ app.post("/urls", (req, res) => {
 
   if (!user) {
     res.status(403).send("Gotta log in dude.");
-  }
-  // generate a unique id to assign to each new shortURL
-  let newShortURL = generateRandomString();
-
-  urlDatabase[`${newShortURL}`] = { longURL: req.body.longURL, userID: user.id };
+  } else {
+    // generate a unique id to assign to each new shortURL
+    let newShortURL = generateRandomString();
   
-  res.redirect(`/urls/${newShortURL}`);
+    urlDatabase[`${newShortURL}`] = { longURL: req.body.longURL, userID: user.id };
+    
+    res.redirect(`/urls/${newShortURL}`);
+  }
 });
-
 
 
 // SHOW (specific url)
@@ -130,11 +134,15 @@ app.get("/urls/:id", (req, res) => {
 
   const templateVars = { shortURL, longURL: urlDatabase[shortURL].longURL, user };
 
-  if (!urlDatabase[templateVars["shortURL"]]) {
+  if (!user) {
+    res.status(403).send("*Please login to see your shortened URL*");
+  } else if (users[user] !== urlDatabase[shortURL].userID) {
+    res.status(403).send("This one's not your's! Go make your own :)")
+  } else if (!urlDatabase[shortURL]) {
     res.status(404).send("The short URL you're looking for doesn't exist :(")
+  } else {
+    res.render("urls_show", templateVars);
   }
-
-  res.render("urls_show", templateVars);
 });
 // redirect from page
 app.get("/u/:id", (req, res) => {
@@ -142,6 +150,7 @@ app.get("/u/:id", (req, res) => {
 
   res.redirect(longURL);
 });
+
 
 //UPDATE
 app.get('/urls/:id', (req, res) => {
@@ -165,6 +174,7 @@ app.post('/urls/:id', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+
 //DELETE
 app.post('/urls/:id/delete', (req, res) => {
   const user = req.cookies["user_id"];
@@ -180,6 +190,7 @@ app.post('/urls/:id/delete', (req, res) => {
     res.redirect('/urls');
   }
 });
+
 
 // REGISTER
 app.get("/register", (req, res) => {
@@ -224,6 +235,7 @@ app.post("/register", (req, res) => {
   }
 });
 
+
 //LOGIN
 app.get('/login', (req, res) => {
   const user = req.cookies["user_id"];
@@ -249,6 +261,7 @@ app.post('/login', (req, res) => {
     return res.redirect("/urls");
   }
 })
+
 
 //LOGOUT
 app.post('/logout', (req, res) => {
