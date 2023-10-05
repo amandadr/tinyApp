@@ -76,11 +76,12 @@ app.get("/urls", (req, res) => {
 
   if (!user) {
     res.status(403).send("*Please login to see your shortened URLs*")
+  } else {
+    const templateVars = { urls: urlDatabase, user };
+  
+    res.render("urls_index", templateVars);
   }
 
-  const templateVars = { urls: urlDatabase, user };
-
-  res.render("urls_index", templateVars);
 });
 
 // CREATE NEW URL
