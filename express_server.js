@@ -41,7 +41,7 @@ const getUserByEmail = (userData, email) => {
       return user[1];
     };
   };
-  console.log('User not found; will create new user...')
+  console.log('User not found')
   return false;
 };
 
