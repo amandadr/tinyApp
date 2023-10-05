@@ -34,6 +34,7 @@ const users = {
     password: "dishwasher-funk",
   },
 };
+// user from req is = users[user].id;
 
 /// FUNCTIONS ///
 const generateRandomString = () => { 
@@ -60,6 +61,11 @@ const urlsForUser = (urlData, id) => {
     }
   });
   return Object.fromEntries(result);
+}
+
+const authorizeUser = (shortURL, user) => {
+  // check id from users data against shortURL userID,
+  return users[user] === urlDatabase[shortURL].userID
 }
 
 
@@ -89,7 +95,7 @@ app.get("/urls", (req, res) => {
   if (!user) {
     res.status(403).send("*Please login to see your shortened URLs*")
   } else {
-    const templateVars = { urls: urlDatabase, user };
+    const templateVars = { urls: urlsForUser(urlDatabase, user), user };
   
     res.render("urls_index", templateVars);
   }
@@ -136,7 +142,7 @@ app.get("/urls/:id", (req, res) => {
 
   if (!user) {
     res.status(403).send("*Please login to see your shortened URL*");
-  } else if (users[user] !== urlDatabase[shortURL].userID) {
+  } else if (authorizeUser(shortURL, user) === false) {
     res.status(403).send("This one's not your's! Go make your own :)")
   } else if (!urlDatabase[shortURL]) {
     res.status(404).send("The short URL you're looking for doesn't exist :(")
