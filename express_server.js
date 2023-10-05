@@ -188,15 +188,15 @@ app.post("/register", (req, res) => {
     res.sendStatus(400);
   //or, add them to the database as a new user
   } else {
-    users[email] = {
+    users[id] = {
       id,
       email,
       password,
     };
 
-    res.cookie('user_id', users[email])
+    res.cookie('user_id', users[id])
   
-    console.log("NEW USER CREATED", users[email]);
+    console.log("NEW USER CREATED", users[id].email);
   
     return res.redirect("/urls");
   }
@@ -210,10 +210,10 @@ app.get('/login', (req, res) => {
     users, user,
   };
 
-  if (user) {
-    res.redirect('/urls')
-  } else {
+  if (!user) {
     res.render("urls_login", templateVars);
+  } else {
+    res.redirect('/urls')
   }
 });
 app.post('/login', (req, res) => {
