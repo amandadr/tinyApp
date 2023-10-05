@@ -67,11 +67,20 @@ app.get("/urls", (req, res) => {
 
 // CREATE - add a new shortened url
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    user: req.cookies["user_id"]
+  };
+  // redirect if not logged in
+  if (!templateVars['user']) {
+    res.redirect('/login')
+  }
+  res.render("urls_new", templateVars);
 });
 // recieve new ID
-// (triggers when form is submitted)
 app.post("/urls", (req, res) => {
+  if (!req.cookies["user_id"]) {
+    res.status(403).send("Gotta log in dude.");
+  }
   // generate a unique id to assign to each new key
   let newID = generateRandomString();
 
@@ -85,6 +94,11 @@ app.get("/register", (req, res) => {
   const templateVars = {
     users, user: req.cookies["user_id"]
   };
+  
+  // redirect if logged in
+  if (templateVars['user']) {
+    res.redirect('/urls')
+  }
 
   res.render("urls_register", templateVars);
 });
@@ -92,12 +106,15 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   // generate a unique id to assign to each new key
   let id = generateRandomString();
+  
   // pull user details from forms
   const { email, password } = req.body;
+  const currentUser = getUserByEmail(users, email);
 
   // return broken request for empty forms or enrolled user
-  if (!email || !password || getUserByEmail(users, email) !== false) {
+  if (!email || !password || currentUser !== false) {
     res.sendStatus(400);
+  //or, add them to the database as a new user
   } else {
     users[email] = {
       id,
@@ -105,9 +122,9 @@ app.post("/register", (req, res) => {
       password,
     };
 
-    res.cookie('user_id', getUserByEmail(users, email))
+    res.cookie('user_id', users[email])
   
-    console.log("NEW USER CREATED", getUserByEmail(users, email));
+    console.log("NEW USER CREATED", users[email]);
   
     return res.redirect("/urls");
   }
@@ -117,6 +134,10 @@ app.post("/register", (req, res) => {
 // display specific url
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"] };
+
+  if (!urlDatabase[templateVars["id"]]) {
+    res.status(404).send("The short URL you're looking for doesn't exist :(")
+  }
 
   res.render("urls_show", templateVars);
 });
@@ -148,11 +169,14 @@ app.post('/urls/:id', (req, res) => {
 
 //DELETE
 app.post('/urls/:id/delete', (req, res) => {
-  // extract the id we need to delete from the url of the request
-  const id = req.params.id;
-
-  delete urlDatabase[id];
-
+  // if authorized, extract the id we need to delete from the url of the request
+  if (req.cookies["user_id"]) {
+    const id = req.params.id;
+  
+    delete urlDatabase[id];
+  
+    res.redirect('/urls');
+  }
   res.redirect('/urls');
 });
 
@@ -161,6 +185,10 @@ app.get('/login', (req, res) => {
   const templateVars = {
     users, user: req.cookies["user_id"]
   };
+
+  if (templateVars['user']) {
+    res.redirect('/urls')
+  }
 
   res.render("urls_login", templateVars);
 });

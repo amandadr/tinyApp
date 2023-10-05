@@ -14,7 +14,7 @@
 
 <body>
   <%- include('partials/_header') %>
-  <% user%>
+  <% user %>
     <main style="margin: 1em;">
       <h3>My URLs</h3>
       <table class="table">
@@ -48,6 +48,9 @@
             <% } %>
         </tbody>
       </table>
+      <% if(!user){ %>
+        <h4>*Please login/register to create shortened URLs*</h4>
+      <% } %>
     </main>
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
