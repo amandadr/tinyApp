@@ -60,6 +60,8 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+/********//////////// THE MEAT ///////////////*******/
+
 // INDEX
 app.get("/urls", (req, res) => {
   const user = req.cookies["user_id"];
@@ -82,7 +84,7 @@ app.get("/urls/new", (req, res) => {
   }
   res.render("urls_new", templateVars);
 });
-// recieve new ID
+// recieve new shortURL
 app.post("/urls", (req, res) => {
   const user = req.cookies["user_id"];
 
@@ -99,19 +101,20 @@ app.post("/urls", (req, res) => {
 
 
 
-// display specific url
+// SHOW (specific url)
 app.get("/urls/:id", (req, res) => {
   const user = req.cookies["user_id"];
+  const shortURL = req.params.id;
 
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user };
+  const templateVars = { shortURL, longURL: urlDatabase[req.params.id], user };
 
-  if (!urlDatabase[templateVars["id"]]) {
+  if (!urlDatabase[templateVars["shortURL"]]) {
     res.status(404).send("The short URL you're looking for doesn't exist :(")
   }
 
   res.render("urls_show", templateVars);
 });
-// redirect from specific display page
+// redirect from page
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
 
@@ -121,9 +124,10 @@ app.get("/u/:id", (req, res) => {
 //UPDATE
 app.get('/urls/:id', (req, res) => {
   const user = req.cookies["user_id"];
+  const shortURL = req.params.id;
 
   // extract the site to display
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user };
+  const templateVars = { shortURL, longURL: urlDatabase[shortURL], user };
 
   res.render("urls_show", templateVars);
 });
@@ -131,12 +135,12 @@ app.get('/urls/:id', (req, res) => {
 app.post('/urls/:id', (req, res) => {
   //get the info input to through the form
   const { newURL } = req.body;
-  //get id
-  const id = req.params.id
+  //get shortURL
+  const shortURL = req.params.id
   // update database
-  urlDatabase[id] = newURL;
+  urlDatabase[shortURL] = newURL;
   
-  res.redirect(`/urls/${id}`);
+  res.redirect(`/urls/${shortURL}`);
 });
 
 //DELETE
@@ -145,9 +149,9 @@ app.post('/urls/:id/delete', (req, res) => {
 
   // if authorized, extract the id we need to delete from the url of the request
   if (user) {
-    const id = req.params.id;
+    const shortURL = req.params.id;
     
-    delete urlDatabase[id];
+    delete urlDatabase[shortURL];
     
     res.redirect('/urls');
   } else {

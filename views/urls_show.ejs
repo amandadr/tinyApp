@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous" />
   <title>
-    <%= id %> - TinyApp
+    <%= shortURL %> - TinyApp
   </title>
 </head>
 
@@ -21,11 +21,11 @@
           </a>
         </h5>
         <p class="card-text">
-          Short URL ID: <a href="/u/<%= id %>">
-            <%= id %>
+          Short URL ID: <a href="/u/<%= shortURL %>">
+            <%= shortURL %>
           </a>
         <h5>Edit hyperlink:</h5>
-        <form class="form-center" action="/urls/<%= id%>" method="POST">
+        <form class="form-center" action="/urls/<%= shortURL%>" method="POST">
           <div class="form-group mb-2">
             <label for="newURL">Enter a URL:</label>
             <input 
