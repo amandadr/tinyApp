@@ -74,6 +74,10 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const user = req.cookies["user_id"];
 
+  if (!user) {
+    res.status(403).send("*Please login to see your shortened URLs*")
+  }
+
   const templateVars = { urls: urlDatabase, user };
 
   res.render("urls_index", templateVars);
