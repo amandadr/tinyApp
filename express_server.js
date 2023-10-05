@@ -221,7 +221,7 @@ app.post('/login', (req, res) => {
   const currentUser = getUserByEmail(users, email);
   // if currentUser isn't found
   if (currentUser === false || password !== currentUser.password) {
-    res.status(403).send("WHO DO YOU THINK YOU ARE!?\n Make sure you're registered and your password is spelled correctly.")
+    res.status(403).send("WHO DO YOU THINK YOU ARE!?\n Go make sure you're registered.")
   } else {
     res.cookie('user_id', currentUser)
     return res.redirect("/urls");
