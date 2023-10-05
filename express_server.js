@@ -28,13 +28,7 @@ const users = {
 
 /// FUNCTIONS ///
 function generateRandomString() {
-  charSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let randomString = '';
-  for (let i = 0; i < 6; i++) {
-    let random = Math.floor(Math.random() * charSet.length);
-    randomString += charSet.substring(random, random + 1);
-  }
-  return randomString;
+  return Math.random().toString(36).slice(2, 8);
 };
 
 const getUserByEmail = (userData, email) => {
