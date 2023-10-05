@@ -176,8 +176,9 @@ app.post('/urls/:id/delete', (req, res) => {
     delete urlDatabase[id];
   
     res.redirect('/urls');
+  } else {
+    res.redirect('/urls');
   }
-  res.redirect('/urls');
 });
 
 //LOGIN
