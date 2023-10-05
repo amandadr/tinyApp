@@ -35,9 +35,7 @@ const users = {
 };
 
 /// FUNCTIONS ///
-function generateRandomString() {
-  return Math.random().toString(36).slice(2, 8);
-};
+const generateRandomString = () => { Math.random().toString(36).slice(2, 8) };
 
 const getUserByEmail = (userData, email) => {
   const usersArr = Object.entries(userData);
@@ -50,6 +48,17 @@ const getUserByEmail = (userData, email) => {
   console.log('User not found')
   return false;
 };
+
+const urlsForUser = (urlData, id) => {
+  const asArray = Object.entries(urlData);
+  const result = asArray.filter(([key, obj]) => {
+    if (obj.id === id){
+      return obj;
+    }
+  });
+  return Object.fromEntries(result);
+}
+
 
 // CONST REFERENCE
 // const user = req.cookies["user_id"];
