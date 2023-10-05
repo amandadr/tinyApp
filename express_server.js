@@ -9,9 +9,17 @@ app.use(cookieParser());
 
 /// DATA ///
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "010101"
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "010101"
+  },
 };
+// shortURL = urlDatabase[id?]
+// longURL = urlDatabase[shortURL].longURL
 
 const users = {
   userRandomID: {
@@ -91,12 +99,12 @@ app.post("/urls", (req, res) => {
   if (!user) {
     res.status(403).send("Gotta log in dude.");
   }
-  // generate a unique id to assign to each new key
-  let newID = generateRandomString();
+  // generate a unique id to assign to each new shortURL
+  let newShortURL = generateRandomString();
 
-  urlDatabase[`${newID}`] = req.body.longURL;
-
-  res.redirect(`/urls/${newID}`);
+  urlDatabase[`${newShortURL}`] = { longURL: req.body.longURL, userID: user.id };
+  
+  res.redirect(`/urls/${newShortURL}`);
 });
 
 
@@ -106,7 +114,7 @@ app.get("/urls/:id", (req, res) => {
   const user = req.cookies["user_id"];
   const shortURL = req.params.id;
 
-  const templateVars = { shortURL, longURL: urlDatabase[req.params.id], user };
+  const templateVars = { shortURL, longURL: urlDatabase[shortURL].longURL, user };
 
   if (!urlDatabase[templateVars["shortURL"]]) {
     res.status(404).send("The short URL you're looking for doesn't exist :(")
@@ -116,7 +124,7 @@ app.get("/urls/:id", (req, res) => {
 });
 // redirect from page
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
 
   res.redirect(longURL);
 });
@@ -127,7 +135,7 @@ app.get('/urls/:id', (req, res) => {
   const shortURL = req.params.id;
 
   // extract the site to display
-  const templateVars = { shortURL, longURL: urlDatabase[shortURL], user };
+  const templateVars = { shortURL, longURL: urlDatabase[shortURL].longURL, user };
 
   res.render("urls_show", templateVars);
 });
