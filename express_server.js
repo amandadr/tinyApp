@@ -56,8 +56,11 @@ const getUserByEmail = (userData, email) => {
 const urlsForUser = (urlData, id) => {
   const asArray = Object.entries(urlData);
   const result = asArray.filter(([key, obj]) => {
-    if (obj.id === id){
+    if (obj.userID === id){
+      console.log("HIT")
       return obj;
+    } else {
+      console.log("OBJ:", obj)
     }
   });
   return Object.fromEntries(result);
@@ -65,7 +68,8 @@ const urlsForUser = (urlData, id) => {
 
 const authorizeUser = (shortURL, user) => {
   // check id from users data against shortURL userID,
-  return users[user] === urlDatabase[shortURL].userID
+  console.log("user, url...", user, urlDatabase[shortURL].userID)
+  return user.id === urlDatabase[shortURL].userID
 }
 
 
@@ -95,8 +99,8 @@ app.get("/urls", (req, res) => {
   if (!user) {
     res.status(403).send("*Please login to see your shortened URLs*")
   } else {
-    const templateVars = { urls: urlsForUser(urlDatabase, user), user };
-  
+    const templateVars = { urls: urlsForUser(urlDatabase, user.id), user };
+
     res.render("urls_index", templateVars);
   }
 
@@ -127,7 +131,7 @@ app.post("/urls", (req, res) => {
     let newShortURL = generateRandomString();
   
     urlDatabase[`${newShortURL}`] = { longURL: req.body.longURL, userID: user.id };
-    
+
     res.redirect(`/urls/${newShortURL}`);
   }
 });
@@ -142,7 +146,8 @@ app.get("/urls/:id", (req, res) => {
 
   if (!user) {
     res.status(403).send("*Please login to see your shortened URL*");
-  } else if (authorizeUser(shortURL, user) === false) {
+  } else if (!authorizeUser(shortURL, user)) {
+    console.log("! :", !authorizeUser(shortURL, user))
     res.status(403).send("This one's not your's! Go make your own :)")
   } else if (!urlDatabase[shortURL]) {
     res.status(404).send("The short URL you're looking for doesn't exist :(")
@@ -150,7 +155,9 @@ app.get("/urls/:id", (req, res) => {
     res.render("urls_show", templateVars);
   }
 });
-// redirect from page
+
+
+// REDIRECT from show page
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id].longURL;
 
@@ -170,29 +177,35 @@ app.get('/urls/:id', (req, res) => {
 });
 // update post
 app.post('/urls/:id', (req, res) => {
-  //get the info input to through the form
-  const { newURL } = req.body;
-  //get shortURL
-  const shortURL = req.params.id
-  // update database
-  urlDatabase[shortURL] = newURL;
-  
-  res.redirect(`/urls/${shortURL}`);
+  const { newLongURL } = req.body;
+  const shortURL = req.params.id;
+  const user = req.cookies("user_id");
+
+  if (!authorizeUser(shortURL, user)) {
+    res.status(403).send("This one's not your's! Go make your own :)");
+  } else {
+    // update database
+    urlDatabase[shortURL] = newLongURL;
+    
+    res.redirect(`/urls/${shortURL}`);
+  }
 });
 
 
 //DELETE
 app.post('/urls/:id/delete', (req, res) => {
   const user = req.cookies["user_id"];
+  const shortURL = req.params.id;
 
-  // if authorized, extract the id we need to delete from the url of the request
-  if (user) {
-    const shortURL = req.params.id;
-    
+  if (!shortURL) {
+    res.status(404).send("shortURL not found - nothing to delete!")
+  } else if (!user) {
+    res.status(403).send("*Please login to modify your shortened URLs*");
+  } else if (!authorizeUser(shortURL, user)) {
+    res.status(403).send("This one's not your's! Go make your own :)");
+  } else {
     delete urlDatabase[shortURL];
     
-    res.redirect('/urls');
-  } else {
     res.redirect('/urls');
   }
 });
