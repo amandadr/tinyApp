@@ -1,12 +1,18 @@
 const express = require("express");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session')
 const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 3000;
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['super', 'secret'],
+
+  // Cookie Options
+  // maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
 
 /// DATA ///
 const urlDatabase = {
@@ -76,7 +82,7 @@ const authorizeUser = (shortURL, user) => {
 
 
 // CONST REFERENCE
-// const user = req.cookies["user_id"];
+// const user = req.session.user_id;
 // const userEmail = user.email;
 
 // homepage
@@ -96,7 +102,7 @@ app.get("/hello", (req, res) => {
 
 // INDEX
 app.get("/urls", (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session.user_id;
 
   if (!user) {
     res.status(403).send("*Please login to see your shortened URLs*")
@@ -111,8 +117,8 @@ app.get("/urls", (req, res) => {
 
 // CREATE NEW URL
 app.get("/urls/new", (req, res) => {
-  const user = req.cookies["user_id"];
-
+  const user = req.session.user_id;
+  
   const templateVars = {
     user
   };
@@ -124,7 +130,7 @@ app.get("/urls/new", (req, res) => {
 });
 // recieve new shortURL
 app.post("/urls", (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session.user_id;
 
   if (!user) {
     res.status(403).send("Gotta log in dude.");
@@ -141,7 +147,7 @@ app.post("/urls", (req, res) => {
 
 // SHOW (specific url)
 app.get("/urls/:id", (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session.user_id;
   const shortURL = req.params.id;
 
   const templateVars = { shortURL, longURL: urlDatabase[shortURL].longURL, user };
@@ -168,7 +174,7 @@ app.get("/u/:id", (req, res) => {
 
 //UPDATE
 app.get('/urls/:id', (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session.user_id;
   const shortURL = req.params.id;
 
   // extract the site to display
@@ -180,7 +186,7 @@ app.get('/urls/:id', (req, res) => {
 app.post('/urls/:id', (req, res) => {
   const { newLongURL } = req.body;
   const shortURL = req.params.id;
-  const user = req.cookies("user_id");
+  const user = req.session.user_id;
 
   if (!authorizeUser(shortURL, user)) {
     res.status(403).send("This one's not your's! Go make your own :)");
@@ -195,7 +201,7 @@ app.post('/urls/:id', (req, res) => {
 
 //DELETE
 app.post('/urls/:id/delete', (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session.user_id;
   const shortURL = req.params.id;
 
   if (!shortURL) {
@@ -214,7 +220,7 @@ app.post('/urls/:id/delete', (req, res) => {
 
 // REGISTER
 app.get("/register", (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session.user_id;
 
   const templateVars = {
     users, user,
@@ -250,7 +256,7 @@ app.post("/register", (req, res) => {
       password: hash
     };
 
-    res.cookie('user_id', users[id])
+    req.session.user_id = users[id];
   
     console.log("NEW USER CREATED", users[id].email);
   
@@ -261,7 +267,7 @@ app.post("/register", (req, res) => {
 
 //LOGIN
 app.get('/login', (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session.user_id;
 
   const templateVars = {
     users, user,
@@ -283,7 +289,7 @@ app.post('/login', (req, res) => {
   if (!currentUser || !comparePasswords) {
     res.status(403).send("WHO DO YOU THINK YOU ARE!?\n Go make sure you're registered.")
   } else {
-    res.cookie('user_id', currentUser)
+    req.session.user_id = currentUser;
     return res.redirect("/urls");
   }
 })
@@ -292,7 +298,7 @@ app.post('/login', (req, res) => {
 //LOGOUT
 app.post('/logout', (req, res) => {
 
-  res.clearCookie('user_id');
+  req.session = null;
 
   res.redirect('/login');
 });
