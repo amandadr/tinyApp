@@ -1,8 +1,8 @@
 /// SETUP ///
 const express = require("express");
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const bcrypt = require("bcryptjs");
-const methodOverride = require('method-override')
+const methodOverride = require('method-override');
 const app = express();
 const PORT = 3000;
 
@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
   keys: ['super', 'secret'],
-}))
+}));
 app.use(methodOverride('_method'));
 
 /// HELPERS ///
@@ -37,7 +37,7 @@ const users = {
 
 // LANDING
 app.get("/", (req, res) => {
-  const user = req.session.user_id;
+  const user = req.session.userID;
 
   if (!user) {
     res.redirect('/login');
@@ -58,10 +58,10 @@ app.get("/hello", (req, res) => {
 
 // INDEX
 app.get("/urls", (req, res) => {
-  const user = req.session.user_id;
+  const user = req.session.userID;
 
   if (!user) {
-    res.status(403).send("*Please login to see your shortened URLs*")
+    res.status(403).send("*Please login to see your shortened URLs*");
   } else {
     const templateVars = { urls: urlsForUser(urlDatabase, user.id), user };
 
@@ -73,14 +73,14 @@ app.get("/urls", (req, res) => {
 
 // CREATE NEW URL
 app.get("/urls/new", (req, res) => {
-  const user = req.session.user_id;
+  const user = req.session.userID;
   
   const templateVars = {
     user
   };
   // redirect if not logged in
   if (!templateVars['user']) {
-    res.redirect('/login')
+    res.redirect('/login');
   } else {
     res.render("urls_new", templateVars);
   }
@@ -88,7 +88,7 @@ app.get("/urls/new", (req, res) => {
 
 // ADD new shortURL
 app.post("/urls", (req, res) => {
-  const user = req.session.user_id;
+  const user = req.session.userID;
 
   if (!user) {
     res.status(403).send("Gotta log in dude.");
@@ -105,16 +105,16 @@ app.post("/urls", (req, res) => {
 
 // SHOW (specific url)
 app.get("/urls/:id", (req, res) => {
-  const user = req.session.user_id;
+  const user = req.session.userID;
   const shortURL = req.params.id;
   const templateVars = { shortURL, longURL: getLongURL(urlDatabase, shortURL), user };
 
   if (!user) {
     res.status(403).send("*Please login to see your shortened URL*");
   } else if (!authorizeUser(urlDatabase, shortURL, user)) {
-    res.status(403).send("This one's not your's! Go make your own :)")
+    res.status(403).send("This one's not your's! Go make your own :)");
   } else if (!urlDatabase[shortURL]) {
-    res.status(404).send("The short URL you're looking for doesn't exist :(")
+    res.status(404).send("The short URL you're looking for doesn't exist :(");
   } else {
     res.render("urls_show", templateVars);
   }
@@ -136,7 +136,7 @@ app.get("/u/:id", (req, res) => {
 app.put('/urls/:id', (req, res) => {
   const newLongURL = req.body;
   const shortURL = req.params.id;
-  const user = req.session.user_id;
+  const user = req.session.userID;
 
   if (!authorizeUser(urlDatabase, shortURL, user)) {
     res.status(403).send("This one's not your's! Go make your own :)");
@@ -151,11 +151,11 @@ app.put('/urls/:id', (req, res) => {
 
 //DELETE
 app.delete('/urls/:id/delete', (req, res) => {
-  const user = req.session.user_id;
+  const user = req.session.userID;
   const shortURL = req.params.id;
 
   if (!shortURL) {
-    res.status(404).send("shortURL not found - nothing to delete!")
+    res.status(404).send("shortURL not found - nothing to delete!");
   } else if (!user) {
     res.status(403).send("*Please login to modify your shortened URLs*");
   } else if (!authorizeUser(urlDatabase, shortURL, user)) {
@@ -170,7 +170,7 @@ app.delete('/urls/:id/delete', (req, res) => {
 
 // REGISTER
 app.get("/register", (req, res) => {
-  const user = req.session.user_id;
+  const user = req.session.userID;
 
   const templateVars = {
     users, user,
@@ -178,7 +178,7 @@ app.get("/register", (req, res) => {
   
   // redirect if logged in
   if (templateVars['user']) {
-    res.redirect('/urls')
+    res.redirect('/urls');
   } else {
     res.render("urls_register", templateVars);
   }
@@ -206,7 +206,7 @@ app.post("/register", (req, res) => {
     };
 
     // SET cookie,
-    req.session.user_id = users[id];
+    req.session.userID = users[id];
   
     console.log("NEW USER CREATED", users[id].email);
   
@@ -217,7 +217,7 @@ app.post("/register", (req, res) => {
 
 // LOGIN
 app.get('/login', (req, res) => {
-  const user = req.session.user_id;
+  const user = req.session.userID;
 
   const templateVars = {
     users, user,
@@ -226,7 +226,7 @@ app.get('/login', (req, res) => {
   if (!user) {
     res.render("urls_login", templateVars);
   } else {
-    res.redirect('/urls')
+    res.redirect('/urls');
   }
 });
 
@@ -237,12 +237,12 @@ app.post('/login', (req, res) => {
   const comparePasswords = bcrypt.compareSync(password, currentUser.password);
   // if currentUser isn't found
   if (currentUser === undefined || !comparePasswords) {
-    res.status(403).send("WHO DO YOU THINK YOU ARE!?\n Go make sure you're registered.")
+    res.status(403).send("WHO DO YOU THINK YOU ARE!?\n Go make sure you're registered.");
   } else {
-    req.session.user_id = currentUser;
+    req.session.userID = currentUser;
     return res.redirect("/urls");
   }
-})
+});
 
 
 // LOGOUT
