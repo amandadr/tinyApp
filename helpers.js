@@ -7,13 +7,17 @@ const getUserByEmail = (userData, email) => {
   for (const user of usersArr) {
     if (user[1].email === email) {
       // user[1] represents the user object in the array [..., {id, email, pass}]
-      console.log("1 :", user[1])
+    
       return user[1];
     };
   };
   console.log('User not found')
-  return false;
+  return undefined;
 };
+
+const getLongURL = (urlData, shortURL) => {
+  return urlData[shortURL].longURL;
+}
 
 const urlsForUser = (urlData, id) => {
   const asArray = Object.entries(urlData);
@@ -33,4 +37,4 @@ const authorizeUser = (urlData, shortURL, user) => {
   return user.id === urlData[shortURL].userID;
 }
 
-module.exports = { generateRandomString, getUserByEmail, urlsForUser, authorizeUser, };
+module.exports = { generateRandomString, getUserByEmail, getLongURL,  urlsForUser, authorizeUser, };

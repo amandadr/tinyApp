@@ -12,7 +12,7 @@ app.use(cookieSession({
 }))
 
 /// HELPERS ///
-const { generateRandomString, getUserByEmail, urlsForUser, authorizeUser } = require('./helpers');
+const { generateRandomString, getUserByEmail, getLongURL, urlsForUser, authorizeUser } = require('./helpers');
 
 /// DATA ///
 const urlDatabase = {
@@ -111,7 +111,7 @@ app.get("/urls/:id", (req, res) => {
   const user = req.session.user_id;
   const shortURL = req.params.id;
 
-  const templateVars = { shortURL, longURL: urlDatabase[shortURL].longURL, user };
+  const templateVars = { shortURL, longURL: getLongURL(urlDatabase, shortURL), user };
 
   if (!user) {
     res.status(403).send("*Please login to see your shortened URL*");
@@ -127,7 +127,7 @@ app.get("/urls/:id", (req, res) => {
 
 // REDIRECT from show page
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id].longURL;
+  const longURL = getLongURL(urlDatabase, req.params.id);
 
   res.redirect(longURL);
 });
@@ -139,7 +139,7 @@ app.get('/urls/:id', (req, res) => {
   const shortURL = req.params.id;
 
   // extract the site to display
-  const templateVars = { shortURL, longURL: urlDatabase[shortURL].longURL, user };
+  const templateVars = { shortURL, longURL: getLongURL(urlDatabase, shortURL), user };
 
   res.render("urls_show", templateVars);
 });
@@ -190,16 +190,15 @@ app.get("/register", (req, res) => {
   // redirect if logged in
   if (templateVars['user']) {
     res.redirect('/urls')
+  } else {
+    res.render("urls_register", templateVars);
   }
-
-  res.render("urls_register", templateVars);
 });
 // recieve newUser, hash password
 app.post("/register", (req, res) => {
   // pull user details from forms
   const { email, password } = req.body;
   const currentUser = getUserByEmail(users, email);
-
   // generate a unique id to assign to each new key
   const id = generateRandomString();
   
@@ -207,7 +206,7 @@ app.post("/register", (req, res) => {
   const hash = bcrypt.hashSync(password, salt);
 
   // return broken request for empty forms or enrolled user
-  if (!email || !password || currentUser !== false) {
+  if (!email || !password || currentUser !== undefined) {
     res.sendStatus(400);
   //or, add them to the database as a new user
   } else {
@@ -243,11 +242,9 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const currentUser = getUserByEmail(users, email);
-  console.log("US:", currentUser)
   const comparePasswords = bcrypt.compareSync(password, currentUser.password);
-  console.log(comparePasswords);
   // if currentUser isn't found
-  if (!currentUser || !comparePasswords) {
+  if (currentUser === undefined || !comparePasswords) {
     res.status(403).send("WHO DO YOU THINK YOU ARE!?\n Go make sure you're registered.")
   } else {
     req.session.user_id = currentUser;
