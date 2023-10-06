@@ -20,14 +20,7 @@ const urlDatabase = {
     longURL: "http://www.lighthouselabs.ca",
     userID: "010101"
   },
-  "9sm5xK": {
-    longURL: "http://www.google.com",
-    userID: "010101"
-  },
 };
-// shortURL = urlDatabase[id]
-// longURL = urlDatabase[shortURL].longURL
-// userID = urlDatabase[shortURL].userID
 
 const users = {
   userRandomID: {
@@ -35,16 +28,9 @@ const users = {
     email: "user@example.com",
     password: "purple-monkey-dinosaur",
   },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
 };
-// CONST REFERENCE
-// const user = req.session.user_id;
-// or,,, user from req is = users[user].id;
-// const userEmail = user.email;
+
+/******/////// GET READY... ///////*****/
 
 // homepage
 app.get("/", (req, res) => {

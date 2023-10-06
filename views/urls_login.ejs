@@ -16,20 +16,24 @@
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
-        <h5 class="card-title">Welcome to TinyApp! Please login:
+        <h5 class="card-title">Great to see you! Please login:
         </h5>
+        <form action="/register" method="GET">
+          <label for="redirectRegister">Or, register here:</label>
+          <button type="submit" class="btn btn-secondary">Register</button>
+        </form>
         <form class="form-center" action="/login" method="POST">
           <div class="form-group mb-2">
-            <label for="email">Email</label>
+            <label for="email">Email:</label>
             <input 
               class="form-center" 
               type="email" 
               name="email" 
-              placeholder="email"
+              placeholder="username"
               style="width: 300px; margin: 1em" 
             />
 
-            <label for="password">Password</label>
+            <label for="password">Password:</label>
             <input 
               class="form-center" 
               type="password" 

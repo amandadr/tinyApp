@@ -33,7 +33,9 @@
                 </a>
               </td>
               <td>
-                <%= urls[shortURL].longURL %>
+                <a href="<%= urls[shortURL].longURL %>">
+                  <%= urls[shortURL].longURL %>
+                </a>
                   <form 
                   method="POST" 
                   action="/urls/<%= shortURL %>/delete"
