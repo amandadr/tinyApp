@@ -1,3 +1,4 @@
+/// SETUP ///
 const express = require("express");
 const cookieSession = require('cookie-session')
 const bcrypt = require("bcryptjs");
@@ -75,7 +76,8 @@ app.get("/urls/new", (req, res) => {
   }
   res.render("urls_new", templateVars);
 });
-// recieve new shortURL
+
+// ADD new shortURL
 app.post("/urls", (req, res) => {
   const user = req.session.user_id;
 
@@ -118,20 +120,9 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
-
-//UPDATE
-app.get('/urls/:id', (req, res) => {
-  const user = req.session.user_id;
-  const shortURL = req.params.id;
-
-  // extract the site to display
-  const templateVars = { shortURL, longURL: getLongURL(urlDatabase, shortURL), user };
-
-  res.render("urls_show", templateVars);
-});
-// update post
+// UPDATE /edit longURL
 app.post('/urls/:id', (req, res) => {
-  const { newLongURL } = req.body;
+  const newLongURL = req.body;
   const shortURL = req.params.id;
   const user = req.session.user_id;
 
@@ -139,7 +130,8 @@ app.post('/urls/:id', (req, res) => {
     res.status(403).send("This one's not your's! Go make your own :)");
   } else {
     // update database
-    urlDatabase[shortURL] = newLongURL;
+    urlDatabase[shortURL].longURL = newLongURL.newLongURL;
+    console.log(urlDatabase)
     
     res.redirect(`/urls/${shortURL}`);
   }
@@ -180,7 +172,8 @@ app.get("/register", (req, res) => {
     res.render("urls_register", templateVars);
   }
 });
-// recieve newUser, hash password
+
+// ADD newUser, w/ hashed password
 app.post("/register", (req, res) => {
   // pull user details from forms
   const { email, password } = req.body;
@@ -194,7 +187,7 @@ app.post("/register", (req, res) => {
   // return broken request for empty forms or enrolled user
   if (!email || !password || currentUser !== undefined) {
     res.sendStatus(400);
-  //or, add them to the database as a new user
+  // or, add them to the database as a new user
   } else {
     users[id] = {
       id,
@@ -202,6 +195,7 @@ app.post("/register", (req, res) => {
       password: hash
     };
 
+    // SET cookie,
     req.session.user_id = users[id];
   
     console.log("NEW USER CREATED", users[id].email);
@@ -211,7 +205,7 @@ app.post("/register", (req, res) => {
 });
 
 
-//LOGIN
+// LOGIN
 app.get('/login', (req, res) => {
   const user = req.session.user_id;
 
@@ -225,6 +219,8 @@ app.get('/login', (req, res) => {
     res.redirect('/urls')
   }
 });
+
+// ADD currentUser (just logged in)
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const currentUser = getUserByEmail(users, email);
@@ -239,7 +235,7 @@ app.post('/login', (req, res) => {
 })
 
 
-//LOGOUT
+// LOGOUT
 app.post('/logout', (req, res) => {
 
   req.session = null;
@@ -248,7 +244,7 @@ app.post('/logout', (req, res) => {
 });
 
 
-// listen
+// LISTEN
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });

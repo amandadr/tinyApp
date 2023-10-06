@@ -23,10 +23,8 @@ const urlsForUser = (urlData, id) => {
   const asArray = Object.entries(urlData);
   const result = asArray.filter(([key, obj]) => {
     if (obj.userID === id){
-      console.log("HIT")
       return obj;
     } else {
-      console.log("OBJ:", obj)
     }
   });
   return Object.fromEntries(result);
