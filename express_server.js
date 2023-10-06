@@ -1,5 +1,6 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
+const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 3000;
 
@@ -45,7 +46,8 @@ const getUserByEmail = (userData, email) => {
   const usersArr = Object.entries(userData);
   for (const user of usersArr) {
     if (user[1].email === email) {
-      // user[1] represents the user object {id, email, pass}
+      // user[1] represents the user object in the array [..., {id, email, pass}]
+      console.log("1 :", user[1])
       return user[1];
     };
   };
@@ -225,14 +227,17 @@ app.get("/register", (req, res) => {
 
   res.render("urls_register", templateVars);
 });
-// recieve newUser 
+// recieve newUser, hash password
 app.post("/register", (req, res) => {
-  // generate a unique id to assign to each new key
-  let id = generateRandomString();
-  
   // pull user details from forms
   const { email, password } = req.body;
   const currentUser = getUserByEmail(users, email);
+
+  // generate a unique id to assign to each new key
+  const id = generateRandomString();
+  
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(password, salt);
 
   // return broken request for empty forms or enrolled user
   if (!email || !password || currentUser !== false) {
@@ -242,7 +247,7 @@ app.post("/register", (req, res) => {
     users[id] = {
       id,
       email,
-      password,
+      password: hash
     };
 
     res.cookie('user_id', users[id])
@@ -271,8 +276,11 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const currentUser = getUserByEmail(users, email);
+  console.log("US:", currentUser)
+  const comparePasswords = bcrypt.compareSync(password, currentUser.password);
+  console.log(comparePasswords);
   // if currentUser isn't found
-  if (currentUser === false || password !== currentUser.password) {
+  if (!currentUser || !comparePasswords) {
     res.status(403).send("WHO DO YOU THINK YOU ARE!?\n Go make sure you're registered.")
   } else {
     res.cookie('user_id', currentUser)
