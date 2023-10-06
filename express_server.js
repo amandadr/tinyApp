@@ -9,10 +9,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
   keys: ['super', 'secret'],
-
-  // Cookie Options
-  // maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
+
+/// HELPERS ///
+const { generateRandomString, getUserByEmail, urlsForUser, authorizeUser } = require('./helpers');
 
 /// DATA ///
 const urlDatabase = {
@@ -41,48 +41,9 @@ const users = {
     password: "dishwasher-funk",
   },
 };
-// user from req is = users[user].id;
-
-/// FUNCTIONS ///
-const generateRandomString = () => { 
-  return Math.random().toString(36).slice(2, 8); 
-};
-
-const getUserByEmail = (userData, email) => {
-  const usersArr = Object.entries(userData);
-  for (const user of usersArr) {
-    if (user[1].email === email) {
-      // user[1] represents the user object in the array [..., {id, email, pass}]
-      console.log("1 :", user[1])
-      return user[1];
-    };
-  };
-  console.log('User not found')
-  return false;
-};
-
-const urlsForUser = (urlData, id) => {
-  const asArray = Object.entries(urlData);
-  const result = asArray.filter(([key, obj]) => {
-    if (obj.userID === id){
-      console.log("HIT")
-      return obj;
-    } else {
-      console.log("OBJ:", obj)
-    }
-  });
-  return Object.fromEntries(result);
-}
-
-const authorizeUser = (shortURL, user) => {
-  // check id from users data against shortURL userID,
-  console.log("user, url...", user, urlDatabase[shortURL].userID)
-  return user.id === urlDatabase[shortURL].userID
-}
-
-
 // CONST REFERENCE
 // const user = req.session.user_id;
+// or,,, user from req is = users[user].id;
 // const userEmail = user.email;
 
 // homepage
@@ -154,7 +115,7 @@ app.get("/urls/:id", (req, res) => {
 
   if (!user) {
     res.status(403).send("*Please login to see your shortened URL*");
-  } else if (!authorizeUser(shortURL, user)) {
+  } else if (!authorizeUser(urlDatabase, shortURL, user)) {
     res.status(403).send("This one's not your's! Go make your own :)")
   } else if (!urlDatabase[shortURL]) {
     res.status(404).send("The short URL you're looking for doesn't exist :(")
@@ -188,7 +149,7 @@ app.post('/urls/:id', (req, res) => {
   const shortURL = req.params.id;
   const user = req.session.user_id;
 
-  if (!authorizeUser(shortURL, user)) {
+  if (!authorizeUser(urlDatabase, shortURL, user)) {
     res.status(403).send("This one's not your's! Go make your own :)");
   } else {
     // update database
@@ -208,7 +169,7 @@ app.post('/urls/:id/delete', (req, res) => {
     res.status(404).send("shortURL not found - nothing to delete!")
   } else if (!user) {
     res.status(403).send("*Please login to modify your shortened URLs*");
-  } else if (!authorizeUser(shortURL, user)) {
+  } else if (!authorizeUser(urlDatabase, shortURL, user)) {
     res.status(403).send("This one's not your's! Go make your own :)");
   } else {
     delete urlDatabase[shortURL];
