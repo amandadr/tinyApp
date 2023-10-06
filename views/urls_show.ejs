@@ -25,7 +25,7 @@
             <%= shortURL %>
           </a>
         <h5>Edit hyperlink:</h5>
-        <form class="form-center" action="/urls/<%= shortURL%>" method="POST">
+        <form class="form-center" action="/urls/<%= shortURL%>?_method=PUT" method="POST">
           <div class="form-group mb-2">
             <label for="newURL">Enter a URL:</label>
             <input 

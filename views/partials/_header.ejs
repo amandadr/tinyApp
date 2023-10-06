@@ -20,7 +20,7 @@
     </div>
     <% if(user){ %>
       <div class="collapse navbar-collapse" id="cookieUser">
-        <h5>Logged in: <%= user['email']%></h5>
+        <button class="btn btn-secondary">Logged in: <%= user['email']%></button>
         <form action="/logout" method="POST">
           <button type="submit" class="btn btn-primary">Logout</button>
         </form>

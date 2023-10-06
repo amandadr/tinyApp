@@ -2,6 +2,7 @@
 const express = require("express");
 const cookieSession = require('cookie-session')
 const bcrypt = require("bcryptjs");
+const methodOverride = require('method-override')
 const app = express();
 const PORT = 3000;
 
@@ -11,6 +12,7 @@ app.use(cookieSession({
   name: 'session',
   keys: ['super', 'secret'],
 }))
+app.use(methodOverride('_method'));
 
 /// HELPERS ///
 const { generateRandomString, getUserByEmail, getLongURL, urlsForUser, authorizeUser } = require('./helpers');
@@ -33,9 +35,15 @@ const users = {
 
 /******/////// GET READY... ///////*****/
 
-// homepage
+// LANDING
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  const user = req.session.user_id;
+
+  if (!user) {
+    res.redirect('/login');
+  } else {
+    res.redirect('/urls');
+  }
 });
 // display json object containing urls
 app.get("/urls.json", (req, res) => {
@@ -73,8 +81,9 @@ app.get("/urls/new", (req, res) => {
   // redirect if not logged in
   if (!templateVars['user']) {
     res.redirect('/login')
+  } else {
+    res.render("urls_new", templateVars);
   }
-  res.render("urls_new", templateVars);
 });
 
 // ADD new shortURL
@@ -98,7 +107,6 @@ app.post("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const user = req.session.user_id;
   const shortURL = req.params.id;
-
   const templateVars = { shortURL, longURL: getLongURL(urlDatabase, shortURL), user };
 
   if (!user) {
@@ -115,13 +123,17 @@ app.get("/urls/:id", (req, res) => {
 
 // REDIRECT from show page
 app.get("/u/:id", (req, res) => {
-  const longURL = getLongURL(urlDatabase, req.params.id);
-
-  res.redirect(longURL);
+  const shortURL = req.params.id;
+  if (!urlDatabase[shortURL]) {
+    res.sendStatus(404);
+  } else {
+    const longURL = getLongURL(urlDatabase, shortURL);
+    res.redirect(longURL);
+  }
 });
 
-// UPDATE /edit longURL
-app.post('/urls/:id', (req, res) => {
+// EDIT longURL
+app.put('/urls/:id', (req, res) => {
   const newLongURL = req.body;
   const shortURL = req.params.id;
   const user = req.session.user_id;
@@ -131,15 +143,14 @@ app.post('/urls/:id', (req, res) => {
   } else {
     // update database
     urlDatabase[shortURL].longURL = newLongURL.newLongURL;
-    console.log(urlDatabase)
     
-    res.redirect(`/urls/${shortURL}`);
+    res.redirect(`/urls`);
   }
 });
 
 
 //DELETE
-app.post('/urls/:id/delete', (req, res) => {
+app.delete('/urls/:id/delete', (req, res) => {
   const user = req.session.user_id;
   const shortURL = req.params.id;
 
@@ -175,10 +186,9 @@ app.get("/register", (req, res) => {
 
 // ADD newUser, w/ hashed password
 app.post("/register", (req, res) => {
-  // pull user details from forms
   const { email, password } = req.body;
   const currentUser = getUserByEmail(users, email);
-  // generate a unique id to assign to each new key
+  
   const id = generateRandomString();
   
   const salt = bcrypt.genSaltSync(10);
@@ -186,7 +196,7 @@ app.post("/register", (req, res) => {
 
   // return broken request for empty forms or enrolled user
   if (!email || !password || currentUser !== undefined) {
-    res.sendStatus(400);
+    res.status(400).send("Have you been here before? Try logging in! No? Give us an email and password to get you started!");
   // or, add them to the database as a new user
   } else {
     users[id] = {
